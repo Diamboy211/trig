@@ -9,11 +9,11 @@ const w = 600, h = 600;
 const c = document.getElementById("a").getContext("2d");
 let t = 0;
 let loop = _ => {
-    t++;
+    t--;
     const cr = t * Math.PI / 180;
     const x = 250 * Math.cos(cr)
     const y = 250 * Math.sin(cr);
-    if (t > 180) t = -179;
+    if (t < -180) t = 179;
     c.lineWidth = 4;
     c.fillStyle = "#000";
     c.strokeStyle ="#FFF";
@@ -29,7 +29,7 @@ let loop = _ => {
     c.stroke();
     c.beginPath();
     c.strokeStyle = "#F00";
-    c.arc(w * 0.5, h * 0.5, 30, 0, cr);
+    c.arc(w * 0.5, h * 0.5, 30, cr, 0);
     c.stroke();
     c.beginPath();
     c.strokeStyle = "#0F0";
