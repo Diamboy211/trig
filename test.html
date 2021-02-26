@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<body>
+<canvas id="a" width="600" height="600"></canvas>
+<div id="b"></div>
+</body>
+<script>
+const w = 600, h = 600;
+const c = document.getElementById("a").getContext("2d");
+let t = 0;
+const frameRate = 60;
+function record(canvas, time) {
+      var recordedChunks = [];
+      return new Promise(function(res, rej) {
+        var stream = canvas.captureStream(frameRate /*fps*/);
+        var mediaRecorder = new MediaRecorder(stream, {
+          mimeType: "video/webm; codecs=vp9"
+        });
+
+        //ondataavailable will fire in interval of `time || 4000 ms`
+        mediaRecorder.start(time || 4000);
+
+        mediaRecorder.ondataavailable = function(e) {
+          recordedChunks.push(event.data);
+          if (mediaRecorder.state === "recording") {
+            // after stop data avilable event run one more time
+            mediaRecorder.stop();
+          }
+        };
+
+        mediaRecorder.onstop = function(event) {
+          var blob = new Blob(recordedChunks, {
+            type: "video/webm"
+          });
+          var url = URL.createObjectURL(blob);
+          res(url);
+        };
+      });
+    }
+let loop = _ => {
+    t++;
+    const cr = t * Math.PI / 180;
+    const x = 250 * Math.cos(cr)
+    const y = 250 * Math.sin(cr);
+    if (t > 180) t = -179;
+    c.lineWidth = 4;
+    c.fillStyle = "#000";
+    c.strokeStyle ="#FFF";
+    c.fillRect(0,0,w,h);
+    c.beginPath();
+    c.arc(w * 0.5, h * 0.5, 250, 0, 2 * Math.PI);
+    c.moveTo(w * 0.5, 0);
+    c.lineTo(w * 0.5, h);
+    c.moveTo(0, h * 0.5);
+    c.lineTo(w, h * 0.5)
+    c.moveTo(w * 0.5,  h * 0.5);
+    c.lineTo(w * 0.5 + x, h * 0.5 + y);
+    c.stroke();
+    c.beginPath();
+    c.strokeStyle = "#F00";
+    c.arc(w * 0.5, h * 0.5, 30, 0, cr);
+    c.stroke();
+    c.beginPath();
+    c.strokeStyle = "#0F0";
+    c.moveTo(w * 0.5 + x, h * 0.5);
+    c.lineTo(w * 0.5 + x, w * 0.5 + y)
+    c.stroke();
+    c.beginPath();
+    c.strokeStyle = "#00F";
+    c.moveTo(w * 0.5, h * 0.5 + y);
+    c.lineTo(w * 0.5 + x, w * 0.5 + y)
+    c.stroke();
+}
+setInterval(loop, 1000/60);
+setTimeout(async()=>{
+let l = await record(document.getElementById("a"), 6000);
+document.getElementById("b").innerHTML = `<a href="${l}">get</a>`
+}, 6000);
+</script>
+</html>
